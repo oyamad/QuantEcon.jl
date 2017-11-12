@@ -219,7 +219,7 @@ num_actions(ddp::DiscreteDP) = size(ddp.R, 2)
 
 
 """
-`DPSolveResult` is an object for retaining results and associated metadata after
+`DDPSolveResult` is an object for retaining results and associated metadata after
 solving the model
 
 ##### Parameters
@@ -228,17 +228,17 @@ solving the model
 
 ##### Returns
 
-- `ddpr::DPSolveResult` : DiscreteDP results object
+- `ddpr::DDPSolveResult` : DiscreteDP results object
 
 """
-mutable struct DPSolveResult{Algo<:DPAlgorithm,Tval<:Real}
+mutable struct DDPSolveResult{Algo<:DPAlgorithm,Tval<:Real}
     v::Vector{Tval}
     Tv::Array{Tval}
     num_iter::Int
     sigma::Array{Int,1}
     mc::MarkovChain
 
-    function DPSolveResult{Algo,Tval}(
+    function DDPSolveResult{Algo,Tval}(
             ddp::DiscreteDP
         ) where {Algo,Tval}
         v = s_wise_max(ddp, ddp.R) # Initialise v with v_init
@@ -250,7 +250,7 @@ mutable struct DPSolveResult{Algo<:DPAlgorithm,Tval<:Real}
     end
 
     # method to pass initial value function (skip the s-wise max)
-    function DPSolveResult{Algo,Tval}(
+    function DDPSolveResult{Algo,Tval}(
             ddp::DiscreteDP, v::Vector
         ) where {Algo,Tval}
         ddpr = new{Algo,Tval}(v, similar(v), 0, similar(v, Int))
@@ -300,7 +300,7 @@ Apply the Bellman operator using `v=ddpr.v`, `Tv=ddpr.Tv`, and `sigma=ddpr.sigma
 Updates `ddpr.Tv` and `ddpr.sigma` inplace
 
 """
-bellman_operator!(ddp::DiscreteDP, ddpr::DPSolveResult) =
+bellman_operator!(ddp::DiscreteDP, ddpr::DDPSolveResult) =
     bellman_operator!(ddp, ddpr.v, ddpr.Tv, ddpr.sigma)
 
 """
@@ -360,7 +360,7 @@ Compute the ``v``-greedy policy
 ##### Parameters
 
 - `ddp::DiscreteDP` : Object that contains the model parameters
-- `ddpr::DPSolveResult` : Object that contains result variables
+- `ddpr::DDPSolveResult` : Object that contains result variables
 
 ##### Returns
 
@@ -371,7 +371,7 @@ Compute the ``v``-greedy policy
 modifies ddpr.sigma and ddpr.Tv in place
 
 """
-compute_greedy!(ddp::DiscreteDP, ddpr::DPSolveResult) =
+compute_greedy!(ddp::DiscreteDP, ddpr::DDPSolveResult) =
     (bellman_operator!(ddp, ddpr); ddpr.sigma)
 
 doc"""
@@ -399,11 +399,11 @@ end
 # ----------------------- #
 
 """
-Method of `evaluate_policy` that extracts sigma from a `DPSolveResult`
+Method of `evaluate_policy` that extracts sigma from a `DDPSolveResult`
 
 See other docstring for details
 """
-evaluate_policy(ddp::DiscreteDP, ddpr::DPSolveResult) =
+evaluate_policy(ddp::DiscreteDP, ddpr::DDPSolveResult) =
     evaluate_policy(ddp, ddpr.sigma)
 
 """
@@ -447,13 +447,13 @@ Solve the dynamic programming problem.
 
 ##### Returns
 
-- `ddpr::DPSolveResult{Algo}` : Optimization result represented as a
-  `DPSolveResult`. See `DPSolveResult` for details.
+- `ddpr::DDPSolveResult{Algo}` : Optimization result represented as a
+  `DDPSolveResult`. See `DDPSolveResult` for details.
 """
 function solve(ddp::DiscreteDP{T}, method::Type{Algo}=VFI;
                max_iter::Integer=250, epsilon::Real=1e-3,
                k::Integer=20) where {Algo<:DPAlgorithm,T}
-    ddpr = DPSolveResult{Algo,T}(ddp)
+    ddpr = DDPSolveResult{Algo,T}(ddp)
     _solve!(ddp, ddpr, max_iter, epsilon, k)
     ddpr.mc = MarkovChain(ddp, ddpr)
     ddpr
@@ -462,7 +462,7 @@ end
 function solve(ddp::DiscreteDP{T}, v_init::AbstractVector{T},
              method::Type{Algo}=VFI; max_iter::Integer=250,
              epsilon::Real=1e-3, k::Integer=20) where {Algo<:DPAlgorithm,T}
-    ddpr = DPSolveResult{Algo,T}(ddp, v_init)
+    ddpr = DDPSolveResult{Algo,T}(ddp, v_init)
     _solve!(ddp, ddpr, max_iter, epsilon, k)
     ddpr.mc = MarkovChain(ddp, ddpr)
     ddpr
@@ -478,22 +478,22 @@ Returns the controlled Markov chain for a given policy `sigma`.
 ##### Parameters
 
 - `ddp::DiscreteDP` : Object that contains the model parameters
-- `ddpr::DPSolveResult` : Object that contains result variables
+- `ddpr::DDPSolveResult` : Object that contains result variables
 
 ##### Returns
 
 mc : MarkovChain
      Controlled Markov chain.
 """
-QuantEcon.MarkovChain(ddp::DiscreteDP, ddpr::DPSolveResult) =
+QuantEcon.MarkovChain(ddp::DiscreteDP, ddpr::DDPSolveResult) =
     MarkovChain(RQ_sigma(ddp, ddpr)[2])
 
 """
-Method of `RQ_sigma` that extracts sigma from a `DPSolveResult`
+Method of `RQ_sigma` that extracts sigma from a `DDPSolveResult`
 
 See other docstring for details
 """
-RQ_sigma(ddp::DiscreteDP, ddpr::DPSolveResult) = RQ_sigma(ddp, ddpr.sigma)
+RQ_sigma(ddp::DiscreteDP, ddpr::DDPSolveResult) = RQ_sigma(ddp, ddpr.sigma)
 
 """
 Given a policy `sigma`, return the reward vector `R_sigma` and
@@ -739,7 +739,7 @@ Impliments Value Iteration
 NOTE: See `solve` for further details
 """
 function _solve!(
-        ddp::DiscreteDP, ddpr::DPSolveResult{VFI}, max_iter::Integer,
+        ddp::DiscreteDP, ddpr::DDPSolveResult{VFI}, max_iter::Integer,
         epsilon::Real, k::Integer
     )
     if ddp.beta == 0.0
@@ -773,7 +773,7 @@ NOTE: The epsilon is ignored in this method. It is only here so dispatch can
       See `solve` for further details
 """
 function _solve!(
-        ddp::DiscreteDP, ddpr::DPSolveResult{PFI}, max_iter::Integer,
+        ddp::DiscreteDP, ddpr::DDPSolveResult{PFI}, max_iter::Integer,
         epsilon::Real, k::Integer
     )
     old_sigma = copy(ddpr.sigma)
@@ -800,7 +800,7 @@ midrange(x::AbstractVector) = mean(extrema(x))
 Modified Policy Function Iteration
 """
 function _solve!(
-        ddp::DiscreteDP, ddpr::DPSolveResult{MPFI}, max_iter::Integer,
+        ddp::DiscreteDP, ddpr::DDPSolveResult{MPFI}, max_iter::Integer,
         epsilon::Real, k::Integer
     )
     beta = ddp.beta
