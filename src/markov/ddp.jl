@@ -217,39 +217,6 @@ num_states(ddp::DDP) = size(ddp.R, 1)
 num_states(ddp::DDPsa) = size(ddp.Q, 2)
 num_actions(ddp::DiscreteDP) = size(ddp.R, 2)
 
-abstract type DDPAlgorithm end
-"""
-This refers to the Value Iteration solution algorithm.
-
-References
-----------
-
-https://lectures.quantecon.org/py/discrete_dp.html
-
-"""
-struct VFI <: DDPAlgorithm end
-
-"""
-This refers to the Policy Iteration solution algorithm.
-
-References
-----------
-
-https://lectures.quantecon.org/py/discrete_dp.html
-
-"""
-struct PFI <: DDPAlgorithm end
-
-"""
-This refers to the Modified Policy Iteration solution algorithm.
-
-References
-----------
-
-https://lectures.quantecon.org/py/discrete_dp.html
-
-"""
-struct MPFI <: DDPAlgorithm end
 
 """
 `DPSolveResult` is an object for retaining results and associated metadata after
@@ -264,7 +231,7 @@ solving the model
 - `ddpr::DPSolveResult` : DiscreteDP results object
 
 """
-mutable struct DPSolveResult{Algo<:DDPAlgorithm,Tval<:Real}
+mutable struct DPSolveResult{Algo<:DPAlgorithm,Tval<:Real}
     v::Vector{Tval}
     Tv::Array{Tval}
     num_iter::Int
@@ -485,7 +452,7 @@ Solve the dynamic programming problem.
 """
 function solve(ddp::DiscreteDP{T}, method::Type{Algo}=VFI;
                max_iter::Integer=250, epsilon::Real=1e-3,
-               k::Integer=20) where {Algo<:DDPAlgorithm,T}
+               k::Integer=20) where {Algo<:DPAlgorithm,T}
     ddpr = DPSolveResult{Algo,T}(ddp)
     _solve!(ddp, ddpr, max_iter, epsilon, k)
     ddpr.mc = MarkovChain(ddp, ddpr)
@@ -494,7 +461,7 @@ end
 
 function solve(ddp::DiscreteDP{T}, v_init::AbstractVector{T},
              method::Type{Algo}=VFI; max_iter::Integer=250,
-             epsilon::Real=1e-3, k::Integer=20) where {Algo<:DDPAlgorithm,T}
+             epsilon::Real=1e-3, k::Integer=20) where {Algo<:DPAlgorithm,T}
     ddpr = DPSolveResult{Algo,T}(ddp, v_init)
     _solve!(ddp, ddpr, max_iter, epsilon, k)
     ddpr.mc = MarkovChain(ddp, ddpr)

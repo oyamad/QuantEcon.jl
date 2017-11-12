@@ -119,8 +119,11 @@ export
 # random_mc
     random_markov_chain, random_stochastic_matrix, random_discrete_dp,
 
+# markov/types
+    VFI, PFI, MPFI,
+
 # ddp
-    DiscreteDP, VFI, PFI, MPFI, solve, RQ_sigma,
+    DiscreteDP, solve, RQ_sigma,
     evaluate_policy, bellman_operator, compute_greedy,
     bellman_operator!, compute_greedy!, num_states,
 
@@ -140,6 +143,7 @@ include("util.jl")
 include("interp.jl")
 include("arma.jl")
 include("compute_fp.jl")
+include("markov/types.jl")
 include("markov/markov_approx.jl")
 include("markov/mc_tools.jl")
 include("markov/ddp.jl")
