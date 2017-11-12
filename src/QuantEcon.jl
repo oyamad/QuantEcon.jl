@@ -9,6 +9,7 @@ using Distributions
 import Distributions: pdf, skewness, BetaBinomial
 using DSP: TFFilter, freqz
 using Primes: primes
+using BasisMatrices
 
 @static if isdefined(Base, :Iterators)
     using Base.Iterators: cycle, take
@@ -127,6 +128,9 @@ export
     evaluate_policy, bellman_operator, compute_greedy,
     bellman_operator!, compute_greedy!, num_states,
 
+# cdp
+    ContinuousDP, bellman_operator!, compute_greedy!, evaluate_policy!,
+
 # zeros / optimization
     bisect, brenth, brent, ridder, expand_bracket, divide_bracket,
     golden_method,
@@ -147,6 +151,7 @@ include("markov/types.jl")
 include("markov/markov_approx.jl")
 include("markov/mc_tools.jl")
 include("markov/ddp.jl")
+include("markov/cdp.jl")
 include("markov/random_mc.jl")
 include("discrete_rv.jl")
 include("ecdf.jl")
