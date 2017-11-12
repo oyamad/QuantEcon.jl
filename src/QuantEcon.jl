@@ -9,7 +9,6 @@ using Distributions
 import Distributions: pdf, skewness, BetaBinomial
 using DSP: TFFilter, freqz
 using Primes: primes
-using Compat: view, @compat
 
 @static if isdefined(Base, :Iterators)
     using Base.Iterators: cycle, take
